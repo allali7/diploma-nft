@@ -302,6 +302,18 @@
 				"internalType": "address",
 				"name": "requester",
 				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "institutionName",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "institutionID",
+				"type": "string"
 			}
 		],
 		"name": "IssuerRequestSubmitted",
@@ -359,7 +371,18 @@
 		"type": "event"
 	},
 	{
-		"inputs": [],
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "institutionName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "institutionID",
+				"type": "string"
+			}
+		],
 		"name": "requestAuthorization",
 		"outputs": [],
 		"stateMutability": "payable",
@@ -660,6 +683,16 @@
 				"type": "address"
 			},
 			{
+				"internalType": "string",
+				"name": "institutionName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "institutionID",
+				"type": "string"
+			},
+			{
 				"internalType": "uint256",
 				"name": "approvals",
 				"type": "uint256"
@@ -672,25 +705,6 @@
 			{
 				"internalType": "bool",
 				"name": "processed",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "issuers",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
 				"type": "bool"
 			}
 		],
