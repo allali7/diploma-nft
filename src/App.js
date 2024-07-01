@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Diploma NFT Issuer</h1>
+        <h1>-</h1>
         <IssueDiploma />
       </header>
     </div>
