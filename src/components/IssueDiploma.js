@@ -159,14 +159,32 @@ const IssueDiploma = () => {
     }
 
     try {
-      const web3 = window.web3;
+      if (!window.ethereum) {
+        setRequestMessage('MetaMask is not installed. Please install MetaMask and try again.');
+        return;
+      }
+
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts.length === 0) {
+        setRequestMessage('No MetaMask account found. Please connect to MetaMask.');
+        return;
+      }
+
+      const account = accounts[0];
+      const web3 = new Web3(window.ethereum);
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
+
       await contract.methods.requestAuthorization().send({ from: account, value: Web3.utils.toWei('0.001', 'ether') });
       setRequestMessage('Authorization request submitted successfully.');
       await fetchPendingRequests(); // Refresh the pending requests
     } catch (error) {
-      console.error('Error requesting authorization:', error);
-      setRequestMessage('Failed to submit authorization request.');
+      if (error.code === 4001) {
+        // User rejected the transaction
+        setRequestMessage('Transaction rejected by user.');
+      } else {
+        console.error('Error requesting authorization:', error);
+        setRequestMessage('Failed to submit authorization request.');
+      }
     }
   };
 
@@ -184,7 +202,7 @@ const IssueDiploma = () => {
   return (
     <Container>
       <Row>
-        <Col className="text-center">
+        <Col>
           <img src={TrustCertLogo} alt="TrustCert Logo" style={{ width: '200px', position: 'fixed', top: '10px', left: '10px' }} />
         </Col>
       </Row>
