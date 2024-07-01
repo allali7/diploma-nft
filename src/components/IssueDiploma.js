@@ -3,14 +3,15 @@ import Web3 from 'web3';
 import axios from 'axios';
 import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
-import TrustCertLogo from './TrustCertLogo.png'; // Import the logo
-import './IssueDiploma.css'; // Import the CSS
+import TrustCertLogo from './TrustCertLogo.png';
+import './IssueDiploma.css';
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
     studentName: '',
     studentID: '',
     institutionName: '',
+    institutionID: '',
     degree: '',
     image: null,
   });
@@ -160,40 +161,22 @@ const IssueDiploma = () => {
     }
 
     try {
-      if (!window.ethereum) {
-        setRequestMessage('MetaMask is not installed. Please install MetaMask and try again.');
-        return;
-      }
-
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      if (accounts.length === 0) {
-        setRequestMessage('No MetaMask account found. Please connect to MetaMask.');
-        return;
-      }
-
-      const account = accounts[0];
-      const web3 = new Web3(window.ethereum);
+      const web3 = window.web3;
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-
-      await contract.methods.requestAuthorization().send({ from: account, value: Web3.utils.toWei('0.001', 'ether') });
+      await contract.methods.requestAuthorization(form.institutionName, form.institutionID).send({ from: account, value: Web3.utils.toWei('0.001', 'ether') });
       setRequestMessage('Authorization request submitted successfully.');
       await fetchPendingRequests(); // Refresh the pending requests
     } catch (error) {
-      if (error.code === 4001) {
-        // User rejected the transaction
-        setRequestMessage('Transaction rejected by user.');
-      } else {
-        console.error('Error requesting authorization:', error);
-        setRequestMessage('Failed to submit authorization request.');
-      }
+      console.error('Error requesting authorization:', error);
+      setRequestMessage('Failed to submit authorization request.');
     }
   };
 
-  const handleVoteOnRequest = async (requestId, approve) => {
+  const handleVoteOnRequest = async (requestIds, approve) => {
     try {
       const web3 = window.web3;
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-      await contract.methods.voteOnIssuerRequest(requestId, approve).send({ from: account });
+      await contract.methods.voteOnIssuerRequest(requestIds, approve).send({ from: account });
       await fetchPendingRequests(); // Refresh the pending requests
     } catch (error) {
       console.error('Error voting on request:', error);
@@ -202,11 +185,7 @@ const IssueDiploma = () => {
 
   return (
     <Container>
-      <Row>
-        <Col>
-          <img src={TrustCertLogo} alt="TrustCert Logo" className="logo" />
-        </Col>
-      </Row>
+      <img src={TrustCertLogo} className="logo" alt="TrustCert Logo" />
       <Row>
         <Col>
           <Card className="mt-4">
@@ -306,6 +285,28 @@ const IssueDiploma = () => {
       <Card className="mt-4">
         <Card.Body>
           <Card.Title>Request Issuer Authorization</Card.Title>
+          <Form.Group className="mb-3">
+            <Form.Label>Institution Name</Form.Label>
+            <Form.Control
+              type="text"
+              name="institutionName"
+              value={form.institutionName}
+              onChange={handleChange}
+              placeholder="Institution Name"
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Institution ID</Form.Label>
+            <Form.Control
+              type="text"
+              name="institutionID"
+              value={form.institutionID}
+              onChange={handleChange}
+              placeholder="Institution ID"
+              required
+            />
+          </Form.Group>
           <Button onClick={handleRequestAuthorization}>Request Authorization</Button>
           {requestMessage && <Alert variant="info" className="mt-3">{requestMessage}</Alert>}
         </Card.Body>
@@ -317,16 +318,19 @@ const IssueDiploma = () => {
             {pendingRequests.length === 0 ? (
               <Alert variant="info">No pending requests</Alert>
             ) : (
-              pendingRequests.map((request) => (
-                <div key={request.requestId}>
-                  <p><strong>Requester:</strong> {request.requester}</p>
-                  <p><strong>Approvals:</strong> {request.approvals}</p>
-                  <p><strong>Rejections:</strong> {request.rejections}</p>
-                  <Button variant="success" className="me-2" onClick={() => handleVoteOnRequest(request.requestId, true)}>Approve</Button>
-                  <Button variant="danger" onClick={() => handleVoteOnRequest(request.requestId, false)}>Reject</Button>
-                  <hr />
-                </div>
-              ))
+              <Form>
+                {pendingRequests.map((request) => (
+                  <Form.Group controlId={request.requestId} key={request.requestId}>
+                    <Form.Check 
+                      type="checkbox" 
+                      label={`Requester: ${request.requester}, Institution: ${request.institutionName}, Institution ID: ${request.institutionID}`} 
+                      value={request.requestId}
+                    />
+                  </Form.Group>
+                ))}
+                <Button variant="success" className="me-2" onClick={() => handleVoteOnRequest(pendingRequests.map(r => r.requestId), true)}>Approve Selected</Button>
+                <Button variant="danger" onClick={() => handleVoteOnRequest(pendingRequests.map(r => r.requestId), false)}>Reject Selected</Button>
+              </Form>
             )}
           </Card.Body>
         </Card>
