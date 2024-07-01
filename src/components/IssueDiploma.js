@@ -3,17 +3,17 @@ import Web3 from 'web3';
 import axios from 'axios';
 import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
-import TrustCertLogo from './TrustCertLogo.png';
-import './IssueDiploma.css';
+import TrustCertLogo from './TrustCertLogo.png'; // Import the logo
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
     studentName: '',
     studentID: '',
     institutionName: '',
-    institutionID: '',
     degree: '',
     image: null,
+    requesterInstitutionName: '',
+    requesterInstitutionID: '',
   });
 
   const [tokenId, setTokenId] = useState('');
@@ -163,7 +163,7 @@ const IssueDiploma = () => {
     try {
       const web3 = window.web3;
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-      await contract.methods.requestAuthorization(form.institutionName, form.institutionID).send({ from: account, value: Web3.utils.toWei('0.001', 'ether') });
+      await contract.methods.requestAuthorization(form.requesterInstitutionName, form.requesterInstitutionID).send({ from: account, value: Web3.utils.toWei('0.001', 'ether') });
       setRequestMessage('Authorization request submitted successfully.');
       await fetchPendingRequests(); // Refresh the pending requests
     } catch (error) {
@@ -285,29 +285,31 @@ const IssueDiploma = () => {
       <Card className="mt-4">
         <Card.Body>
           <Card.Title>Request Issuer Authorization</Card.Title>
-          <Form.Group className="mb-3">
-            <Form.Label>Institution Name</Form.Label>
-            <Form.Control
-              type="text"
-              name="institutionName"
-              value={form.institutionName}
-              onChange={handleChange}
-              placeholder="Institution Name"
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Institution ID</Form.Label>
-            <Form.Control
-              type="text"
-              name="institutionID"
-              value={form.institutionID}
-              onChange={handleChange}
-              placeholder="Institution ID"
-              required
-            />
-          </Form.Group>
-          <Button onClick={handleRequestAuthorization}>Request Authorization</Button>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Institution Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="requesterInstitutionName"
+                value={form.requesterInstitutionName}
+                onChange={handleChange}
+                placeholder="Institution Name"
+                required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Institution ID</Form.Label>
+              <Form.Control
+                type="text"
+                name="requesterInstitutionID"
+                value={form.requesterInstitutionID}
+                onChange={handleChange}
+                placeholder="Institution ID"
+                required
+              />
+            </Form.Group>
+            <Button variant="primary" onClick={handleRequestAuthorization}>Request Authorization</Button>
+          </Form>
           {requestMessage && <Alert variant="info" className="mt-3">{requestMessage}</Alert>}
         </Card.Body>
       </Card>
@@ -320,16 +322,16 @@ const IssueDiploma = () => {
             ) : (
               <Form>
                 {pendingRequests.map((request) => (
-                  <Form.Group controlId={request.requestId} key={request.requestId}>
-                    <Form.Check 
-                      type="checkbox" 
-                      label={`Requester: ${request.requester}, Institution: ${request.institutionName}, Institution ID: ${request.institutionID}`} 
+                  <Form.Group key={request.requestId} className="mb-3">
+                    <Form.Check
+                      type="checkbox"
+                      label={`Requester: ${request.requester}, Institution Name: ${request.institutionName}, Institution ID: ${request.institutionID}`}
                       value={request.requestId}
                     />
                   </Form.Group>
                 ))}
-                <Button variant="success" className="me-2" onClick={() => handleVoteOnRequest(pendingRequests.map(r => r.requestId), true)}>Approve Selected</Button>
-                <Button variant="danger" onClick={() => handleVoteOnRequest(pendingRequests.map(r => r.requestId), false)}>Reject Selected</Button>
+                <Button variant="success" className="me-2" onClick={() => handleVoteOnRequest(pendingRequests.filter(r => r.selected).map(r => r.requestId), true)}>Approve Selected</Button>
+                <Button variant="danger" onClick={() => handleVoteOnRequest(pendingRequests.filter(r => r.selected).map(r => r.requestId), false)}>Reject Selected</Button>
               </Form>
             )}
           </Card.Body>
