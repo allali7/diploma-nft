@@ -7,18 +7,19 @@
 }
 
 */
-
+/* Define the logo styles */
 .logo {
   position: fixed;
   width: 15%;
   max-width: 600px;
-  position: fixed;
-  top: 0;
-  left: 0;
-/*  padding: 10px;*/
-/*  z-index: 1000;*/
+  top: 10px;
+  left: 10px;
+  /* Uncomment these lines if needed */
+  /* padding: 10px; */
+  /* z-index: 1000; */
 }
 
+/* Adjust the logo size for smaller screens */
 @media (max-width: 768px) {
   .logo {
     width: 50%;
@@ -31,15 +32,9 @@
   }
 }
 
+/* Define the background styles */
 body {
   background-image: url('./logobackground.png');
   background-repeat: repeat;
   background-size: cover;
-}
-
-.logo {
-  width: 200px; 
-  position: fixed; 
-  top: 10px; 
-  left: 10px;
 }
