@@ -3,7 +3,7 @@ import Web3 from 'web3';
 import axios from 'axios';
 import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
-import TrustCertLogo from './TrustCertLogo.png'; // Import the logo
+import TrustCertLogo from './TrustCertLogo.png';
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
@@ -176,7 +176,9 @@ const IssueDiploma = () => {
     try {
       const web3 = window.web3;
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-      await contract.methods.voteOnIssuerRequest(requestIds, approve).send({ from: account });
+      await Promise.all(requestIds.map(async (requestId) => {
+        await contract.methods.voteOnIssuerRequest(requestId, approve).send({ from: account });
+      }));
       await fetchPendingRequests(); // Refresh the pending requests
     } catch (error) {
       console.error('Error voting on request:', error);
@@ -185,7 +187,7 @@ const IssueDiploma = () => {
 
   return (
     <Container>
-      <img src={TrustCertLogo} className="logo" alt="TrustCert Logo" />
+      <img src={TrustCertLogo} alt="TrustCert Logo" className="logo" />
       <Row>
         <Col>
           <Card className="mt-4">
@@ -308,7 +310,7 @@ const IssueDiploma = () => {
                 required
               />
             </Form.Group>
-            <Button variant="primary" onClick={handleRequestAuthorization}>Request Authorization</Button>
+            <Button onClick={handleRequestAuthorization}>Request Authorization</Button>
           </Form>
           {requestMessage && <Alert variant="info" className="mt-3">{requestMessage}</Alert>}
         </Card.Body>
@@ -322,16 +324,16 @@ const IssueDiploma = () => {
             ) : (
               <Form>
                 {pendingRequests.map((request) => (
-                  <Form.Group key={request.requestId} className="mb-3">
+                  <div key={request.requestId}>
                     <Form.Check
                       type="checkbox"
-                      label={`Requester: ${request.requester}, Institution Name: ${request.institutionName}, Institution ID: ${request.institutionID}`}
-                      value={request.requestId}
+                      label={`Requester: ${request.requester}, Institution: ${request.institutionName}, ID: ${request.institutionID}`}
+                      id={request.requestId}
                     />
-                  </Form.Group>
+                  </div>
                 ))}
-                <Button variant="success" className="me-2" onClick={() => handleVoteOnRequest(pendingRequests.filter(r => r.selected).map(r => r.requestId), true)}>Approve Selected</Button>
-                <Button variant="danger" onClick={() => handleVoteOnRequest(pendingRequests.filter(r => r.selected).map(r => r.requestId), false)}>Reject Selected</Button>
+                <Button variant="success" className="mt-3" onClick={() => handleVoteOnRequest(pendingRequests.map(req => req.requestId), true)}>Approve Selected</Button>
+                <Button variant="danger" className="mt-3 ms-3" onClick={() => handleVoteOnRequest(pendingRequests.map(req => req.requestId), false)}>Reject Selected</Button>
               </Form>
             )}
           </Card.Body>
@@ -342,11 +344,6 @@ const IssueDiploma = () => {
 };
 
 export default IssueDiploma;
-
-
-
-
-
 
 
 
