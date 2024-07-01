@@ -4,6 +4,7 @@ import axios from 'axios';
 import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
 import TrustCertLogo from './TrustCertLogo.png';
+import '../IssueDiploma.css'; 
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
