@@ -4,6 +4,7 @@ import axios from 'axios';
 import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
 import TrustCertLogo from './TrustCertLogo.png'; // Import the logo
+import './IssueDiploma.css'; // Import the CSS
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
@@ -203,7 +204,7 @@ const IssueDiploma = () => {
     <Container>
       <Row>
         <Col>
-          <img src={TrustCertLogo} alt="TrustCert Logo" style={{ width: '200px', position: 'fixed', top: '10px', left: '10px' }} />
+          <img src={TrustCertLogo} alt="TrustCert Logo" className="logo" />
         </Col>
       </Row>
       <Row>
