@@ -58,5 +58,6 @@
 /* Define the background styles */
 body {
   background-image: url('./logobackground.png');
-  background-repeat: repeat
+  background-repeat: repeat-x;
+  
 }
