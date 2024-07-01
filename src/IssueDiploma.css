@@ -57,7 +57,7 @@
 
 /* Define the background styles */
 body {
-  background-image: url('./logobackground.png');
+  background-image: url('/logobackground.png');
   background-repeat: repeat;
   background-size: cover;
 }
