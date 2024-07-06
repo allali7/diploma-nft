@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import axios from 'axios';
@@ -6,7 +5,6 @@ import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
 import TrustCertLogo from './TrustCertLogo.png';
 import '../IssueDiploma.css'; 
-
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
@@ -25,7 +23,6 @@ const IssueDiploma = () => {
   const [account, setAccount] = useState('');
   const [pendingRequests, setPendingRequests] = useState([]);
   const [isAuthorizedIssuer, setIsAuthorizedIssuer] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
 
   useEffect(() => {
     const loadWeb3 = async () => {
@@ -189,17 +186,13 @@ const IssueDiploma = () => {
     }
   };
 
-  const handleSearch = async (type, value) => {
+  const handleSearchDiplomas = async (searchTerm) => {
     try {
       const web3 = window.web3;
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-      let result;
-      if (type === 'studentID') {
-        result = await contract.methods.getDiplomasByStudentID(value).call();
-      } else if (type === 'studentName') {
-        result = await contract.methods.getDiplomasByStudentName(value).call();
-      }
-      setSearchResults(result);
+      const results = await contract.methods.getDiplomasByInstitution(searchTerm).call();
+      // Handle results as needed
+      console.log('Search results:', results);
     } catch (error) {
       console.error('Error searching diplomas:', error);
     }
@@ -359,70 +352,30 @@ const IssueDiploma = () => {
           </Card.Body>
         </Card>
       )}
-      <Card className="mt-4">
-        <Card.Body>
-          <Card.Title>Search Diplomas</Card.Title>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Search by Student ID</Form.Label>
-              <Form.Control
-                type="text"
-                name="searchStudentID"
-                placeholder="Enter Student ID"
-                onChange={(e) => handleSearch('studentID', e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Search by Student Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="searchStudentName"
-                placeholder="Enter Student Name"
-                onChange={(e) => handleSearch('studentName', e.target.value)}
-              />
-            </Form.Group>
-          </Form>
-          {searchResults.length > 0 && (
-            <div className="mt-3">
-              <h5>Search Results</h5>
-              <ul>
-                {searchResults.map((result, index) => (
-                  <li key={index}>Token ID: {result}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </Card.Body>
-      </Card>
+      {isAuthorizedIssuer && (
+        <Card className="mt-4">
+          <Card.Body>
+            <Card.Title>Search Diplomas by Institution</Card.Title>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Search Term</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="searchTerm"
+                  onChange={handleChange}
+                  placeholder="Institution Name"
+                />
+              </Form.Group>
+              <Button onClick={() => handleSearchDiplomas(form.searchTerm)}>Search</Button>
+            </Form>
+          </Card.Body>
+        </Card>
+      )}
     </Container>
   );
 };
 
 export default IssueDiploma;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
