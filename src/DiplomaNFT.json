@@ -18,13 +18,7 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address[]",
-				"name": "initialIssuers",
-				"type": "address[]"
-			}
-		],
+		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
 	},
@@ -547,6 +541,16 @@
 				"type": "bool"
 			},
 			{
+				"internalType": "string",
+				"name": "institutionName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "institutionID",
+				"type": "string"
+			},
+			{
 				"internalType": "uint256",
 				"name": "lastActiveTimestamp",
 				"type": "uint256"
@@ -554,6 +558,11 @@
 			{
 				"internalType": "uint256",
 				"name": "lastVotedTimestamp",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "diplomasIssuedSinceLastVote",
 				"type": "uint256"
 			}
 		],
@@ -569,6 +578,19 @@
 			}
 		],
 		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "DIPLOMAS_BEFORE_VOTING",
 		"outputs": [
 			{
 				"internalType": "uint256",
