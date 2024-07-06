@@ -29,6 +29,7 @@ const IssueDiploma = () => {
     studentName: ''
   });
   const [filteredDiplomas, setFilteredDiplomas] = useState([]);
+  const [issueMessage, setIssueMessage] = useState('');
 
   useEffect(() => {
     const loadWeb3 = async () => {
@@ -134,8 +135,8 @@ const IssueDiploma = () => {
 
       const newTokenId = tx.events.DiplomaIssued.returnValues.tokenId; // Retrieve the token ID from the event log
       setTokenId(newTokenId); // Set the token ID state
+      setIssueMessage(`Diploma issued successfully! Token ID: ${newTokenId}`);
       console.log('Diploma issued on blockchain with token ID:', newTokenId);
-      alert(`Diploma issued successfully! Token ID: ${newTokenId}`);
     } catch (error) {
       console.error('Error issuing diploma:', error);
       alert('Failed to issue diploma');
@@ -279,7 +280,7 @@ const IssueDiploma = () => {
                 </Form.Group>
                 <Button variant="primary" type="submit">Issue Diploma</Button>
               </Form>
-              {tokenId && <Alert variant="success" className="mt-3">Diploma issued successfully! Token ID: {tokenId}</Alert>}
+              {issueMessage && <Alert variant="success" className="mt-3">{issueMessage}</Alert>}
             </Card.Body>
           </Card>
         </Col>
