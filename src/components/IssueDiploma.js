@@ -374,16 +374,16 @@ const IssueDiploma = () => {
             <Card.Body>
               <Card.Title>Filter Diplomas</Card.Title>
               <Form onSubmit={handleFilterSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Institution Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="institutionName"
-                    value={filter.institutionName}
-                    onChange={handleFilterChange}
-                    placeholder="Institution Name"
-                  />
-                </Form.Group>
+                // <Form.Group className="mb-3">
+                //   <Form.Label>Institution Name</Form.Label>
+                //   <Form.Control
+                //     type="text"
+                //     name="institutionName"
+                //     value={filter.institutionName}
+                //     onChange={handleFilterChange}
+                //     placeholder="Institution Name"
+                //   />
+                // </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label>Student ID</Form.Label>
                   <Form.Control
