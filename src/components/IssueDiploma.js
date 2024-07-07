@@ -4,7 +4,7 @@ import axios from 'axios';
 import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
 import TrustCertLogo from './TrustCertLogo.png';
-import '../IssueDiploma.css';
+import '../IssueDiploma.css'; 
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
@@ -20,7 +20,6 @@ const IssueDiploma = () => {
   const [tokenId, setTokenId] = useState('');
   const [diplomaData, setDiplomaData] = useState(null);
   const [requestMessage, setRequestMessage] = useState('');
-  const [issueMessage, setIssueMessage] = useState('');
   const [account, setAccount] = useState('');
   const [pendingRequests, setPendingRequests] = useState([]);
   const [isAuthorizedIssuer, setIsAuthorizedIssuer] = useState(false);
@@ -62,10 +61,12 @@ const IssueDiploma = () => {
   const fetchPendingRequests = async () => {
     const web3 = window.web3;
     const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-    const requestIds = await contract.methods.getPendingRequestIds().call();
-    const requests = await Promise.all(requestIds.map(async (requestId) => {
-      const request = await contract.methods.issuerRequests(requestId).call();
-      return { requestId, ...request };
+    const requestIds = await contract.methods.getPendingRequests().call();
+    const requests = requestIds[0].map((id, index) => ({
+      requestId: id,
+      address: requestIds[1][index],
+      institutionName: requestIds[2][index],
+      institutionID: requestIds[3][index]
     }));
     setPendingRequests(requests);
   };
@@ -85,6 +86,7 @@ const IssueDiploma = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Upload image to Pinata
       const formData = new FormData();
       formData.append('file', form.image);
       const imageResponse = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
@@ -98,6 +100,7 @@ const IssueDiploma = () => {
 
       console.log('Image uploaded to IPFS:', imageHash);
 
+      // Create metadata and upload to Pinata
       const metadata = {
         studentName: form.studentName,
         studentID: form.studentID,
@@ -115,6 +118,7 @@ const IssueDiploma = () => {
 
       console.log('Metadata uploaded to IPFS:', metadataHash);
 
+      // Interact with smart contract
       const web3 = window.web3;
       const accounts = await web3.eth.getAccounts();
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
@@ -129,10 +133,10 @@ const IssueDiploma = () => {
         )
         .send({ from: accounts[0] });
 
-      const newTokenId = tx.events.DiplomaIssued.returnValues.tokenId;
-      setTokenId(newTokenId);
-      setIssueMessage(`Diploma issued successfully! Token ID: ${newTokenId}`);
+      const newTokenId = tx.events.DiplomaIssued.returnValues.tokenId; // Retrieve the token ID from the event log
+      setTokenId(newTokenId); // Set the token ID state
       console.log('Diploma issued on blockchain with token ID:', newTokenId);
+      alert(`Diploma issued successfully! Token ID: ${newTokenId}`);
     } catch (error) {
       console.error('Error issuing diploma:', error);
       alert('Failed to issue diploma');
@@ -148,6 +152,7 @@ const IssueDiploma = () => {
 
       console.log('Retrieved tokenURI from blockchain:', tokenURI);
 
+      // Fetch the metadata from IPFS
       const response = await axios.get(tokenURI.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/'));
       console.log('Retrieved metadata from IPFS:', response.data);
       setDiplomaData(response.data);
@@ -168,7 +173,7 @@ const IssueDiploma = () => {
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
       await contract.methods.requestAuthorization(form.requesterInstitutionName, form.requesterInstitutionID).send({ from: account, value: Web3.utils.toWei('0.001', 'ether') });
       setRequestMessage('Authorization request submitted successfully.');
-      await fetchPendingRequests();
+      await fetchPendingRequests(); // Refresh the pending requests
     } catch (error) {
       console.error('Error requesting authorization:', error);
       setRequestMessage('Failed to submit authorization request.');
@@ -179,12 +184,12 @@ const IssueDiploma = () => {
     try {
       const web3 = window.web3;
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-      await Promise.all(requestIds.map(async (requestId) => {
-        await contract.methods.voteOnIssuerRequest(requestId, approve).send({ from: account });
-      }));
-      await fetchPendingRequests();
+      await contract.methods.voteOnIssuerRequests(requestIds, approve).send({ from: account });
+      await fetchPendingRequests(); // Refresh the pending requests
+      alert('Voting successful.');
     } catch (error) {
       console.error('Error voting on request:', error);
+      alert('Failed to vote on request.');
     }
   };
 
@@ -273,7 +278,7 @@ const IssueDiploma = () => {
                 </Form.Group>
                 <Button variant="primary" type="submit">Issue Diploma</Button>
               </Form>
-              {issueMessage && <Alert variant="success" className="mt-3">{issueMessage}</Alert>}
+              {tokenId && <Alert variant="success" className="mt-3">Diploma issued successfully! Token ID: {tokenId}</Alert>}
             </Card.Body>
           </Card>
         </Col>
@@ -352,7 +357,7 @@ const IssueDiploma = () => {
                     <div key={request.requestId}>
                       <Form.Check
                         type="checkbox"
-                        label={`Requester: ${request.requester}, Institution: ${request.institutionName}, ID: ${request.institutionID}`}
+                        label={`Requester: ${request.address}, Institution: ${request.institutionName}, ID: ${request.institutionID}`}
                         id={request.requestId}
                       />
                     </div>
