@@ -5,7 +5,7 @@ import axios from 'axios';
 import diplomaNFTAbi from '../DiplomaNFT.json';
 import { Container, Form, Button, Alert, Card, Row, Col } from 'react-bootstrap';
 import TrustCertLogo from './TrustCertLogo.png';
-import '../IssueDiploma.css'; 
+import '../IssueDiploma.css';
 
 const IssueDiploma = () => {
   const [form, setForm] = useState({
@@ -63,10 +63,12 @@ const IssueDiploma = () => {
   const fetchPendingRequests = async () => {
     const web3 = window.web3;
     const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-    const requestIds = await contract.methods.getPendingRequestIds().call();
-    const requests = await Promise.all(requestIds.map(async (requestId) => {
-      const request = await contract.methods.issuerRequests(requestId).call();
-      return { requestId, ...request };
+    const [requestIds, addresses, institutionNames, institutionIDs] = await contract.methods.getPendingRequests().call();
+    const requests = requestIds.map((id, index) => ({
+      requestId: id,
+      address: addresses[index],
+      institutionName: institutionNames[index],
+      institutionID: institutionIDs[index]
     }));
     setPendingRequests(requests);
   };
@@ -184,12 +186,12 @@ const IssueDiploma = () => {
     try {
       const web3 = window.web3;
       const contract = new web3.eth.Contract(diplomaNFTAbi, process.env.REACT_APP_CONTRACT_ADDRESS);
-      await Promise.all(requestIds.map(async (requestId) => {
-        await contract.methods.voteOnIssuerRequest(requestId, approve).send({ from: account });
-      }));
+      await contract.methods.voteOnIssuerRequests(requestIds, approve).send({ from: account });
       await fetchPendingRequests(); // Refresh the pending requests
+      alert('Voting successful.');
     } catch (error) {
       console.error('Error voting on request:', error);
+      alert('Failed to vote on request.');
     }
   };
 
@@ -357,7 +359,7 @@ const IssueDiploma = () => {
                     <div key={request.requestId}>
                       <Form.Check
                         type="checkbox"
-                        label={`Requester: ${request.requester}, Institution: ${request.institutionName}, ID: ${request.institutionID}`}
+                        label={`Requester: ${request.address}, Institution: ${request.institutionName}, ID: ${request.institutionID}`}
                         id={request.requestId}
                       />
                     </div>
